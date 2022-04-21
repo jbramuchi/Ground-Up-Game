@@ -6,7 +6,6 @@ using UnityEngine.AI;
 
 public class InputManager : MonoBehaviour
 {
-
     private PlayerInput playerInput;
     private PlayerInput.OnFootActions onFoot;
     private PlayerLook look;
@@ -17,21 +16,27 @@ public class InputManager : MonoBehaviour
     GameObject weaponHolder;
     GameObject scopeView;
 
-    // Like update()
+    const float zoomPOV = 35f, normalPOV = 60f;
+
     void Awake()
     {
-        //Hide Cursor (PC Testing Purposes)
+
+        // Hide Cursor (PC Testing Purposes)
         Cursor.lockState = CursorLockMode.Locked;
 
+
+        // For Use by Look action
         playerInput = new PlayerInput();
+        onFoot = playerInput.OnFoot;
+        look = GetComponent<PlayerLook>();
+
+
+        // Declare GO's for use of Scope action
         weaponHolder = GameObject.Find("weaponHolder");
         scopeView = GameObject.Find("ScopeView2");
         scopeView.SetActive(false);
-
-        onFoot = playerInput.OnFoot;
-        
         animator = weaponHolder.GetComponent<Animator>();
-        look = GetComponent<PlayerLook>();
+        
     }
 
     void Update()
@@ -39,23 +44,16 @@ public class InputManager : MonoBehaviour
         // Scope Function
         if (onFoot.Scope.triggered)
         {
-            Debug.Log("flag");
             isScoped = !isScoped;
 
-            Debug.Log("flag2");
+            // Trigger "Scoped" animation
             animator.SetBool("Scoped", isScoped);
 
-            Debug.Log("flag3");
+            // Delay Crosshairs and Gun Removal to account for "Scoped" Animation
             if(isScoped)
-            {
                 StartCoroutine(OnScoped());
-            }
             else
-            {
                 OnUnscoped();
-            }
-
-            
         }
     }
 
@@ -63,24 +61,32 @@ public class InputManager : MonoBehaviour
     {
         scopeView.SetActive(false);
         weaponHolder.SetActive(true);
+        Camera.main.fieldOfView = normalPOV;
     }
 
     IEnumerator OnScoped()
     {
+        // .15 seconds is the exact same duration of the "Scoped" animation in 
+        //  the animation controller in Unity
         yield return new WaitForSeconds(.15f);
 
         scopeView.SetActive(true);
         weaponHolder.SetActive(false);
+        Camera.main.fieldOfView = zoomPOV;
     }
 
+    // This calls look to adjust accordingly with player input
     private void LateUpdate()
     {
         look.ProcessLook(onFoot.Look.ReadValue<Vector2>());
     }
+
+    // These allow Look to work but idk what they do
     private void OnEnable()
     {
         onFoot.Enable();
     }
+
     private void OnDisable()
     {
         onFoot.Disable();
