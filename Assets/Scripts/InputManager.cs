@@ -9,13 +9,13 @@ public class InputManager : MonoBehaviour
 
     private PlayerInput playerInput;
     private PlayerInput.OnFootActions onFoot;
-    //private PlayerMotor motor;
     private PlayerLook look;
-    private PlayerScope scope;
 
     // Scoped Variables
     private bool isScoped = false;
     Animator animator;
+    GameObject weaponHolder;
+    GameObject scopeView;
 
     // Like update()
     void Awake()
@@ -24,24 +24,14 @@ public class InputManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         playerInput = new PlayerInput();
-
-        // Weapon
-        GameObject weaponHolder = GameObject.Find("weaponHolder");
+        weaponHolder = GameObject.Find("weaponHolder");
+        scopeView = GameObject.Find("ScopeView2");
+        scopeView.SetActive(false);
 
         onFoot = playerInput.OnFoot;
+        
         animator = weaponHolder.GetComponent<Animator>();
-        //motor = GetComponent<PlayerMotor>();
         look = GetComponent<PlayerLook>();
-
-        //ctx call back context (.performed)
-        //onFoot.Jump.performed += ctx => motor.Jump();
-    }
-
-    // FixedUpdate for physics related thangs
-    void FixedUpdate()
-    {
-        //*OLD* Player movement capabilites
-        //motor.ProcessMove(onFoot.Movement.ReadValue<Vector2>());
     }
 
     void Update()
@@ -53,11 +43,34 @@ public class InputManager : MonoBehaviour
             isScoped = !isScoped;
 
             Debug.Log("flag2");
-            animator.SetBool("Scoped", !isScoped);
+            animator.SetBool("Scoped", isScoped);
 
             Debug.Log("flag3");
+            if(isScoped)
+            {
+                StartCoroutine(OnScoped());
+            }
+            else
+            {
+                OnUnscoped();
+            }
+
+            
         }
-        //scope.ProcessScope(onFoot.Scope.triggered);
+    }
+
+    void OnUnscoped()
+    {
+        scopeView.SetActive(false);
+        weaponHolder.SetActive(true);
+    }
+
+    IEnumerator OnScoped()
+    {
+        yield return new WaitForSeconds(.15f);
+
+        scopeView.SetActive(true);
+        weaponHolder.SetActive(false);
     }
 
     private void LateUpdate()
@@ -67,7 +80,6 @@ public class InputManager : MonoBehaviour
     private void OnEnable()
     {
         onFoot.Enable();
-        
     }
     private void OnDisable()
     {

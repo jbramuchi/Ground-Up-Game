@@ -6,14 +6,14 @@ using UnityEngine.InputSystem;
 public class PlayerScope : MonoBehaviour
 {
     public Animator animator;
-    GameObject weaponHolder = GameObject.Find("weaponHolder");
+    //GameObject weaponHolder = GameObject.Find("weaponHolder");
     
 
     private bool isScoped = false;
 
     public void ProcessScope(bool input)
     {
-        animator = weaponHolder.GetComponent<Animator>();
+        //animator = weaponHolder.GetComponent<Animator>();
         Debug.Log("flag1");
         if (input)
         {
